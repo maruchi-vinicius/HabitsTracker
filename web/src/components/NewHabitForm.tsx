@@ -1,6 +1,7 @@
 import { Check } from "phosphor-react";
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { FormEvent, useState } from "react";
+import { api } from "../lib/axios";
 
 const availableWeekDays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
@@ -21,16 +22,28 @@ export function NewHabitForm() {
         }
     }
 
-    function createNewHabit(event: FormEvent){
+    async function createNewHabit(event: FormEvent){
         event.preventDefault()
 
-        console.log(title, weekDays)
+        if (!title || weekDays.length === 0) {
+            return
+        }
+
+        await api.post('habits', {
+            title,
+            weekDays,
+        })
+
+        setTitle('')
+        setWeekDays([])
+
+        alert('Hábito criado com sucesso!')
     }
 
     return (
         <form onSubmit={createNewHabit} className="w-full flex flex-col mt-6">
             <label htmlFor="title" className="font-semibold leading-tight">Qual seu comprometimento? </label>
-            <input onChange={event => setTitle(event.target.value)} type="text" id="title" placeholder="ex: Exercícios, dormir bem, etc..." autoFocus className="p-4 rounded-lg mt-3 bg-zinc-800 text-white placeholder:text-zinc-400" />
+            <input onChange={event => setTitle(event.target.value)} type="text" id="title" value={title} placeholder="ex: Exercícios, dormir bem, etc..." autoFocus className="p-4 rounded-lg mt-3 bg-zinc-800 text-white placeholder:text-zinc-400" />
 
             <label htmlFor="" className="font-semibold leading-tight mt-4">Qual a recorrência?</label>
 
@@ -38,7 +51,7 @@ export function NewHabitForm() {
                 {
                     availableWeekDays.map((weekDay, index) => {
                         return(
-                            <Checkbox.Root key={weekDay} className='flex items-center gap-3 group' onCheckedChange={() => handleToggleWeekDay(index)}>
+                            <Checkbox.Root key={weekDay} className='flex items-center gap-3 group' onCheckedChange={() => handleToggleWeekDay(index)} checked={weekDays.includes(index)}>
                                 <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-zinc-900 border-2 border-zinc-800 group-data-[state=checked]:bg-green-500 group-data-[state=checked]:border-green-500">
                                     <Checkbox.Indicator>
                                         <Check size={20} className='text-white'/>
